@@ -36,7 +36,6 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpGet]
-    //TODO add logging
     // ReSharper disable once InconsistentNaming
     public ActionResult CheckP2Connected(string _guid)
     {
@@ -63,4 +62,6 @@ public class TicTacToeController : ControllerBase
         _logger.Log(LogLevel.Information, "Player 2 connected to match with UUID: {Uuid}", _guid);
         return Ok();
     }
+    
+    // TODO add p2 connect method and then game logic last
 }
