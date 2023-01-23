@@ -12,7 +12,7 @@ public class TicTacToeController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost]
+    [HttpPost("Create")]
     public ActionResult<string> CreateMatch(string username)
     {
         if (TicTacToeData.TicTacToeMatches.Any(ticTacToeMatch =>
@@ -34,8 +34,8 @@ public class TicTacToeController : ControllerBase
         _logger.Log(LogLevel.Information, "{Username} created a match with UUID: {Guid}", username, guid);
         return Ok(guid.ToString());
     }
-
-    [HttpGet]
+    
+    [HttpGet("CheckConnection")]
     // ReSharper disable once InconsistentNaming
     public ActionResult CheckP2Connected(string _guid)
     {
