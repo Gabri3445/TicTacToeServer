@@ -2,5 +2,5 @@
 
 public static class TicTacToeData
 {
-    public static List<TicTacToeMatch> TicTacToeMatches = new List<TicTacToeMatch>();
+    public static List<TicTacToeMatch> TicTacToeMatches = new();
 }
