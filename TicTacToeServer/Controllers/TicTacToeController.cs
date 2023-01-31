@@ -12,7 +12,7 @@ public abstract class TicTacToeController : ControllerBase
     private readonly ILogger<TicTacToeController> _logger;
 
 
-    public TicTacToeController(ILogger<TicTacToeController> logger)
+    protected TicTacToeController(ILogger<TicTacToeController> logger)
     {
         var client = MongoDbClientSingleton.Instance;
         _database = client.Client.GetDatabase("tictactoe");
@@ -60,11 +60,6 @@ public abstract class TicTacToeController : ControllerBase
             default:
                 _logger.Log(LogLevel.Error, "Fatal Error: Two matches with the same ID");
                 throw new Exception("Two matches with the same ID, check the database");
-
-            /*foreach (var ticTacToeMatch in ticTacToeMatches)
-        if (ticTacToeMatch.MatchGuid.Equals(guid))
-            return ticTacToeMatch;
-    return null;*/
         }
     }
 
@@ -224,7 +219,6 @@ public abstract class TicTacToeController : ControllerBase
     {
         public string Guid { get; set; }
         public int Player { get; set; }
-
         public Location Location { get; set; }
     }
 
