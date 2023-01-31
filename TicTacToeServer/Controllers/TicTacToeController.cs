@@ -1,47 +1,71 @@
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 
 namespace TicTacToeServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TicTacToeController : ControllerBase
+public abstract class TicTacToeController : ControllerBase
 {
+    private readonly IMongoCollection<TicTacToeMatch> _collection;
+    private readonly IMongoDatabase _database;
     private readonly ILogger<TicTacToeController> _logger;
+
 
     public TicTacToeController(ILogger<TicTacToeController> logger)
     {
+        var client = MongoDbClientSingleton.Instance;
+        _database = client.Client.GetDatabase("tictactoe");
+        _collection = _database.GetCollection<TicTacToeMatch>("matches");
         _logger = logger;
     }
 
     [HttpPost("Create")]
-    public ActionResult<string> CreateMatch([FromBody] string username)
+    public async Task<ActionResult<string>> CreateMatch([FromBody] string username)
     {
-        if (TicTacToeData.TicTacToeMatches.Any(ticTacToeMatch =>
-                ticTacToeMatch.User1.Equals(username) || ticTacToeMatch.User2.Equals(username)))
-        {
-            _logger.Log(LogLevel.Error, "Username {Username} already created a match or is already in one", username);
-            return BadRequest();
-        }
-
         if (username.Equals(""))
         {
             _logger.Log(LogLevel.Error, "Username is empty");
             return BadRequest();
         }
 
-        var guid = Guid.NewGuid();
+        var filter = Builders<TicTacToeMatch>.Filter.Or(
+            Builders<TicTacToeMatch>.Filter.Eq(x => x.User1, username),
+            Builders<TicTacToeMatch>.Filter.Eq(x => x.User2, username)
+        );
+        var ticTacToeMatches = _collection.Find(filter).ToList();
+        if (ticTacToeMatches.Any())
+        {
+            _logger.Log(LogLevel.Error, "Username {Username} already created a match or is already in one", username);
+            return BadRequest();
+        }
 
-        TicTacToeData.TicTacToeMatches.Add(new TicTacToeMatch(guid, username));
+        var guid = Guid.NewGuid();
+        await _collection.InsertOneAsync(new TicTacToeMatch(guid, username));
         _logger.Log(LogLevel.Information, "{Username} created a match with UUID: {Guid}", username, guid);
         return Ok(guid.ToString());
     }
 
-    private TicTacToeMatch? GetMatch(Guid guid, List<TicTacToeMatch> ticTacToeMatches)
+    private TicTacToeMatch? GetMatch(Guid guid)
     {
-        foreach (var ticTacToeMatch in ticTacToeMatches)
-            if (ticTacToeMatch.MatchGuid.Equals(guid))
-                return ticTacToeMatch;
-        return null;
+        var filter = Builders<TicTacToeMatch>.Filter.Eq(x => x.MatchGuid, guid);
+        var ticTacToeMatch = _collection.Find(filter).ToList();
+        switch (ticTacToeMatch.Count)
+        {
+            case 1:
+                return ticTacToeMatch[0];
+            case 0:
+            case <= 1:
+                return null;
+            default:
+                _logger.Log(LogLevel.Error, "Fatal Error: Two matches with the same ID");
+                throw new Exception("Two matches with the same ID, check the database");
+
+            /*foreach (var ticTacToeMatch in ticTacToeMatches)
+        if (ticTacToeMatch.MatchGuid.Equals(guid))
+            return ticTacToeMatch;
+    return null;*/
+        }
     }
 
     [HttpGet("CheckP2Connection")]
@@ -59,14 +83,15 @@ public class TicTacToeController : ControllerBase
             return BadRequest("Invalid UUID");
         }
 
-        if (GetMatch(guid, TicTacToeData.TicTacToeMatches) == null)
+        var ticTacToeMatch = GetMatch(guid);
+
+        if (ticTacToeMatch == null)
         {
             _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
             return NotFound("Not found");
         }
 
-        if (TicTacToeData.TicTacToeMatches.Where(iteration => guid.Equals(iteration.MatchGuid))
-            .Any(iteration => iteration.User2 == ""))
+        if (ticTacToeMatch.User2.Equals(""))
         {
             _logger.Log(LogLevel.Error, "Player 2 not connected to match with UUID: {Uuid}", _guid);
             return StatusCode(406, "Not connected");
@@ -93,14 +118,24 @@ public class TicTacToeController : ControllerBase
             return BadRequest();
         }
 
-        var ticTacToeMatch = GetMatch(guid, TicTacToeData.TicTacToeMatches);
+        var ticTacToeMatch = GetMatch(guid);
         if (ticTacToeMatch == null)
         {
             _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
             return NotFound();
         }
 
+        if (ticTacToeMatch.User2 != "")
+        {
+            _logger.Log(LogLevel.Error, "Already connected to match with UUID: {Uuid}", _guid);
+            return BadRequest();
+        }
+
         ticTacToeMatch.User2 = username;
+        var filter = Builders<TicTacToeMatch>.Filter.Eq(x => x.MatchGuid, guid);
+        var update = Builders<TicTacToeMatch>.Update.Set(x => x.User2, username);
+        _collection.UpdateOne(filter, update);
+        // ticTacToeMatch.User2 = username;
         _logger.Log(LogLevel.Information, "Player 2 connected to match with UUID: {Uuid}", _guid);
         return Ok();
     }
@@ -121,7 +156,7 @@ public class TicTacToeController : ControllerBase
             return BadRequest();
         }
 
-        var ticTacToeMatch = GetMatch(guid, TicTacToeData.TicTacToeMatches);
+        var ticTacToeMatch = GetMatch(guid);
         if (ticTacToeMatch != null) return Ok(ticTacToeMatch.Board);
         _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
         return NotFound();
@@ -148,7 +183,7 @@ public class TicTacToeController : ControllerBase
             return BadRequest();
         }
 
-        var ticTacToeMatch = GetMatch(guid, TicTacToeData.TicTacToeMatches);
+        var ticTacToeMatch = GetMatch(guid);
 
         if (ticTacToeMatch == null)
         {
@@ -157,15 +192,20 @@ public class TicTacToeController : ControllerBase
         }
 
         if (ticTacToeMatch.Board[x, y] != 0) return BadRequest();
+        var filter = Builders<TicTacToeMatch>.Filter.Eq(z => z.MatchGuid, guid);
+        ticTacToeMatch = _collection.Find(filter).FirstOrDefault();
+        ticTacToeMatch.MatchGuid = guid; // Match guid gets reset for some reason, so need to set it back
         switch (player)
         {
             case 1:
                 ticTacToeMatch.Board[x, y] = 1;
                 ticTacToeMatch.DrawCounter++;
+                _collection.ReplaceOne(filter, ticTacToeMatch);
                 return Ok();
             case 2:
                 ticTacToeMatch.Board[x, y] = 2;
                 ticTacToeMatch.DrawCounter++;
+                _collection.ReplaceOne(filter, ticTacToeMatch);
                 return Ok();
         }
 
@@ -188,7 +228,7 @@ public class TicTacToeController : ControllerBase
         public Location Location { get; set; }
     }
 
-    public class Location
+    public abstract class Location
     {
         public int X { get; set; }
         public int Y { get; set; }
