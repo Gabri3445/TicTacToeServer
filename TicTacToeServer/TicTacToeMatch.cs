@@ -1,4 +1,7 @@
-﻿namespace TicTacToeServer;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace TicTacToeServer;
 
 public class TicTacToeMatch
 {
@@ -11,6 +14,7 @@ public class TicTacToeMatch
         MatchGuid = matchGuid;
         User1 = user1;
         DrawCounter = 0;
+        Id = matchGuid.ToString();
     }
 
     /*
@@ -26,7 +30,9 @@ public class TicTacToeMatch
 
     public int DrawCounter { get; set; }
 
-    public Guid MatchGuid { get; }
+    [BsonRepresentation(BsonType.String)] public Guid MatchGuid { get; set; }
+
+    [BsonId] private string Id { get; }
 
     public TicTacToeMatchStatus CheckVictory()
     {
