@@ -20,19 +20,17 @@ public class TicTacToeMatch
      */
     public int[,] Board { get; set; }
     public string User1 { get; set; }
+
     public string User2 { get; set; }
     // public TicTacToeMatchStatus TicTacToeMatchStatus { get; set; }
-    
+
     public int DrawCounter { get; set; }
 
     public Guid MatchGuid { get; }
 
     public TicTacToeMatchStatus CheckVictory()
     {
-        if (DrawCounter == 9)
-        {
-            return TicTacToeMatchStatus.Draw;
-        }
+        if (DrawCounter == 9) return TicTacToeMatchStatus.Draw;
         return TicTacToeMatchStatus.Ongoing;
     }
 }

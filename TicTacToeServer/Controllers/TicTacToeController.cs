@@ -126,7 +126,7 @@ public class TicTacToeController : ControllerBase
         _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
         return NotFound();
     }
-    
+
     [HttpPut("MakeMove")]
     public ActionResult MakeMove([FromBody] MakeMoveArguments arguments)
     {
@@ -134,6 +134,8 @@ public class TicTacToeController : ControllerBase
         var player = arguments.Player;
         var x = arguments.Location.X;
         var y = arguments.Location.Y;
+
+        if (x > 3 || y > 3 || (player != 1 && player != 2)) return BadRequest();
 
         Guid guid;
         try
@@ -143,7 +145,7 @@ public class TicTacToeController : ControllerBase
         catch (Exception)
         {
             _logger.Log(LogLevel.Error, "Failed to parse UUID: {Uuid}", _guid);
-            return BadRequest("");
+            return BadRequest();
         }
 
         var ticTacToeMatch = GetMatch(guid, TicTacToeData.TicTacToeMatches);
@@ -165,12 +167,11 @@ public class TicTacToeController : ControllerBase
                 ticTacToeMatch.Board[x, y] = 2;
                 ticTacToeMatch.DrawCounter++;
                 return Ok();
-            default:
-                _logger.Log(LogLevel.Error, "Player not valid in match with UUID: {Uuid}", _guid);
-                return StatusCode(400);
         }
+
+        return BadRequest();
     }
-    
+
     // TODO check win
 
     public class ConnectP2Arguments
