@@ -21,6 +21,8 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpPost("Create")]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(typeof(string), 200)]
     public async Task<ActionResult<string>> CreateMatch([FromBody] string username)
     {
         if (username.Equals(""))
@@ -64,6 +66,10 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpGet("CheckP2Connection")]
+    [ProducesResponseType(typeof(string), 400)]
+    [ProducesResponseType(typeof(string), 404)]
+    [ProducesResponseType(typeof(string), 406)]
+    [ProducesResponseType(200)]
     // ReSharper disable once InconsistentNaming
     public ActionResult CheckP2Connected(string _guid)
     {
@@ -97,6 +103,9 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpPut("ConnectP2")]
+    [ProducesResponseType( 400)]
+    [ProducesResponseType( 404)]
+    [ProducesResponseType(200)]
     // ReSharper disable once InconsistentNaming
     public ActionResult ConnectP2([FromBody] ConnectP2Arguments arguments)
     {
@@ -136,6 +145,9 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpGet("GetBoardStatus")]
+    [ProducesResponseType( 400)]
+    [ProducesResponseType( 404)]
+    [ProducesResponseType(typeof(int[,]), 200)]
     // ReSharper disable once InconsistentNaming
     public ActionResult GetBoardStatus(string _guid)
     {
@@ -158,6 +170,9 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpPut("MakeMove")]
+    [ProducesResponseType(typeof(string),  400)]
+    [ProducesResponseType( 404)]
+    [ProducesResponseType(200)]
     public ActionResult MakeMove([FromBody] MakeMoveArguments arguments)
     {
         var _guid = arguments.Guid;
@@ -223,6 +238,9 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpGet("GetPlayer")]
+    [ProducesResponseType( typeof(string), 400)]
+    [ProducesResponseType( 404)]
+    [ProducesResponseType(typeof(int), 200)]
     public ActionResult<int> GetPlayer(string _guid)
     {
         Guid guid;
@@ -259,6 +277,9 @@ public class TicTacToeController : ControllerBase
     // TODO check win
 
     [HttpGet("CheckWin")]
+    [ProducesResponseType( 400)]
+    [ProducesResponseType( 404)]
+    [ProducesResponseType(typeof(int), 200)]
     public ActionResult<int> CheckWin(string _guid)
     {
         Guid guid;
