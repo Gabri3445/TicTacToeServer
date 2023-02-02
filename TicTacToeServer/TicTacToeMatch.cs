@@ -6,10 +6,12 @@ namespace TicTacToeServer;
 // TODO add comments to here and to the controller
 public class TicTacToeMatch
 {
-    public TicTacToeMatchStatus CurrentPlayer = TicTacToeMatchStatus.X;
+    // TODO add a date and delete the old matches from the DB
+    // Might not need this as the DB document is only 258.0 B
 
     public TicTacToeMatch(Guid matchGuid, string user1)
     {
+        CurrentPlayer = TicTacToeMatchStatus.X;
         Board = new int[3, 3];
         User1 = "";
         User2 = "";
@@ -20,6 +22,9 @@ public class TicTacToeMatch
         Id = matchGuid.ToString();
     }
 
+    // Does not contain the status of the match, only the current player
+    public TicTacToeMatchStatus CurrentPlayer { get; set; }
+
     /*
      * 0 = No player
      * 1 = X
@@ -29,7 +34,6 @@ public class TicTacToeMatch
     public string User1 { get; set; }
 
     public string User2 { get; set; }
-    // public TicTacToeMatchStatus TicTacToeMatchStatus { get; set; }
 
     public int DrawCounter { get; set; }
 

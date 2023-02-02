@@ -11,6 +11,7 @@ public class TicTacToeController : ControllerBase
     private readonly IMongoDatabase _database;
     private readonly ILogger<TicTacToeController> _logger;
 
+    // TODO Make classes for the responses
 
     public TicTacToeController(ILogger<TicTacToeController> logger)
     {
@@ -31,7 +32,7 @@ public class TicTacToeController : ControllerBase
             return BadRequest();
         }
 
-        // Won't need this as uuid's are checking
+        // Won't need this as uuid's are the unique IDs, not the usernames
         /*
          var filter = Builders<TicTacToeMatch>.Filter.Or(
             Builders<TicTacToeMatch>.Filter.Eq(x => x.User1, username),
@@ -67,6 +68,7 @@ public class TicTacToeController : ControllerBase
                 throw new Exception("Two matches with the same ID, check the database");
         }
     }
+
 
     [HttpGet("CheckP2Connection")]
     [ProducesResponseType(typeof(string), 400)]
@@ -147,12 +149,44 @@ public class TicTacToeController : ControllerBase
         return Ok();
     }
 
+    // This is for javascript
+    /*
+     * const apiResponse = {
+  "rows": 3,
+  "columns": 3,
+  "board": [
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0
+  ]
+};
+
+const rows = apiResponse.rows;
+const columns = apiResponse.columns;
+const board = apiResponse.board;
+
+const twoDimensionalArray = [];
+
+for (let i = 0; i < rows; i++) {
+  const startIndex = i * columns;
+  const row = board.slice(startIndex, startIndex + columns);
+  twoDimensionalArray.push(row);
+}
+
+     */
+    
     [HttpGet("GetBoardStatus")]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
-    [ProducesResponseType(typeof(int[,]), 200)]
+    [ProducesResponseType(typeof(int[]), 200)]
     // ReSharper disable once InconsistentNaming
-    public ActionResult GetBoardStatus(string _guid)
+    public ActionResult<int[]> GetBoardStatus(string _guid)
     {
         // JSON return
         Guid guid;
@@ -167,7 +201,29 @@ public class TicTacToeController : ControllerBase
         }
 
         var ticTacToeMatch = GetMatch(guid);
-        if (ticTacToeMatch != null) return Ok(ticTacToeMatch.Board);
+        if (ticTacToeMatch != null)
+        {
+            var rows = ticTacToeMatch.Board.GetLength(0);
+            var columns = ticTacToeMatch.Board.GetLength(1);
+            var flatBoard = new int[rows * columns];
+            var index = 0;
+            for (var i = 0; i < rows; i++)
+            {
+                for (var j = 0; j < columns; j++)
+                {
+                    flatBoard[index++] = ticTacToeMatch.Board[i, j];
+                }
+            }
+
+            var response = new
+            {
+                Rows = rows,
+                Columns = columns,
+                Board = flatBoard
+            };
+
+            return Ok(response);
+        }
         _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
         return NotFound();
     }
@@ -279,8 +335,6 @@ public class TicTacToeController : ControllerBase
             _ => throw new ArgumentOutOfRangeException()
         };
     }
-
-    // TODO check win
 
     [HttpGet("CheckWin")]
     [ProducesResponseType(400)]
