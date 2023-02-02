@@ -31,7 +31,9 @@ public class TicTacToeController : ControllerBase
             return BadRequest();
         }
 
-        /* var filter = Builders<TicTacToeMatch>.Filter.Or(
+        // Won't need this as uuid's are checking
+        /*
+         var filter = Builders<TicTacToeMatch>.Filter.Or(
             Builders<TicTacToeMatch>.Filter.Eq(x => x.User1, username),
             Builders<TicTacToeMatch>.Filter.Eq(x => x.User2, username)
         );
@@ -40,7 +42,8 @@ public class TicTacToeController : ControllerBase
         {
             _logger.Log(LogLevel.Error, "Username {Username} already created a match or is already in one", username);
             return BadRequest();
-        }*/
+        }
+        */
 
         var guid = Guid.NewGuid();
         await _collection.InsertOneAsync(new TicTacToeMatch(guid, username));
@@ -103,8 +106,8 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpPut("ConnectP2")]
-    [ProducesResponseType( 400)]
-    [ProducesResponseType( 404)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
     [ProducesResponseType(200)]
     // ReSharper disable once InconsistentNaming
     public ActionResult ConnectP2([FromBody] ConnectP2Arguments arguments)
@@ -145,8 +148,8 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpGet("GetBoardStatus")]
-    [ProducesResponseType( 400)]
-    [ProducesResponseType( 404)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
     [ProducesResponseType(typeof(int[,]), 200)]
     // ReSharper disable once InconsistentNaming
     public ActionResult GetBoardStatus(string _guid)
@@ -170,8 +173,8 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpPut("MakeMove")]
-    [ProducesResponseType(typeof(string),  400)]
-    [ProducesResponseType( 404)]
+    [ProducesResponseType(typeof(string), 400)]
+    [ProducesResponseType(404)]
     [ProducesResponseType(200)]
     public ActionResult MakeMove([FromBody] MakeMoveArguments arguments)
     {
@@ -181,7 +184,7 @@ public class TicTacToeController : ControllerBase
         var y = arguments.Location.Y;
 
         if (x > 3 || y > 3 || (player != 1 && player != 2)) return BadRequest();
-        
+
 
         Guid guid;
         try
@@ -195,19 +198,21 @@ public class TicTacToeController : ControllerBase
         }
 
         var ticTacToeMatch = GetMatch(guid);
-        
-        
+
 
         if (ticTacToeMatch == null)
         {
             _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
             return NotFound();
         }
-        if (player == 1 && ticTacToeMatch.CurrentPlayer != TicTacToeMatchStatus.X || player == 2 && ticTacToeMatch.CurrentPlayer != TicTacToeMatchStatus.O)
+
+        if ((player == 1 && ticTacToeMatch.CurrentPlayer != TicTacToeMatchStatus.X) ||
+            (player == 2 && ticTacToeMatch.CurrentPlayer != TicTacToeMatchStatus.O))
         {
             _logger.Log(LogLevel.Error, "Wrong player : {Uuid}", _guid);
             return BadRequest("Wrong player");
         }
+
         if (ticTacToeMatch.CheckVictory() != TicTacToeMatchStatus.Ongoing)
         {
             _logger.Log(LogLevel.Error, "Match over with : {Uuid}", _guid);
@@ -238,8 +243,8 @@ public class TicTacToeController : ControllerBase
     }
 
     [HttpGet("GetPlayer")]
-    [ProducesResponseType( typeof(string), 400)]
-    [ProducesResponseType( 404)]
+    [ProducesResponseType(typeof(string), 400)]
+    [ProducesResponseType(404)]
     [ProducesResponseType(typeof(int), 200)]
     public ActionResult<int> GetPlayer(string _guid)
     {
@@ -260,6 +265,7 @@ public class TicTacToeController : ControllerBase
             _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
             return NotFound();
         }
+
         if (ticTacToeMatch.CheckVictory() != TicTacToeMatchStatus.Ongoing)
         {
             _logger.Log(LogLevel.Error, "Match over with : {Uuid}", _guid);
@@ -277,8 +283,8 @@ public class TicTacToeController : ControllerBase
     // TODO check win
 
     [HttpGet("CheckWin")]
-    [ProducesResponseType( 400)]
-    [ProducesResponseType( 404)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
     [ProducesResponseType(typeof(int), 200)]
     public ActionResult<int> CheckWin(string _guid)
     {

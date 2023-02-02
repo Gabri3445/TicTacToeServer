@@ -6,6 +6,8 @@ namespace TicTacToeServer;
 // TODO add comments to here and to the controller
 public class TicTacToeMatch
 {
+    public TicTacToeMatchStatus CurrentPlayer = TicTacToeMatchStatus.X;
+
     public TicTacToeMatch(Guid matchGuid, string user1)
     {
         Board = new int[3, 3];
@@ -31,8 +33,6 @@ public class TicTacToeMatch
 
     public int DrawCounter { get; set; }
 
-    public TicTacToeMatchStatus CurrentPlayer = TicTacToeMatchStatus.X;
-
     [BsonRepresentation(BsonType.String)] public Guid MatchGuid { get; set; }
 
     [BsonId] private string Id { get; }
@@ -41,6 +41,7 @@ public class TicTacToeMatch
     {
         if (DrawCounter == 9) return TicTacToeMatchStatus.Draw;
 
+        // check columns
         for (var i = 0; i < 3; i++)
             if (Board[i, 0] == Board[i, 1] && Board[i, 1] == Board[i, 2] && Board[i, 0] != 0)
                 switch (Board[i, 0])
@@ -51,7 +52,6 @@ public class TicTacToeMatch
                         return TicTacToeMatchStatus.OWon;
                 }
 
-        // check columns
         for (var i = 0; i < 3; i++)
             if (Board[0, i] == Board[1, i] && Board[1, i] == Board[2, i] && Board[0, i] != 0)
                 switch (Board[0, i])
