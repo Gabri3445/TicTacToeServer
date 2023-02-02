@@ -152,35 +152,35 @@ public class TicTacToeController : ControllerBase
     // This is for javascript
     /*
      * const apiResponse = {
-  "rows": 3,
-  "columns": 3,
-  "board": [
-    1,
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0
-  ]
-};
+      "rows": 3,
+      "columns": 3,
+      "board": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    };
 
-const rows = apiResponse.rows;
-const columns = apiResponse.columns;
-const board = apiResponse.board;
+    const rows = apiResponse.rows;
+    const columns = apiResponse.columns;
+    const board = apiResponse.board;
 
-const twoDimensionalArray = [];
+    const twoDimensionalArray = [];
 
-for (let i = 0; i < rows; i++) {
-  const startIndex = i * columns;
-  const row = board.slice(startIndex, startIndex + columns);
-  twoDimensionalArray.push(row);
-}
+    for (let i = 0; i < rows; i++) {
+      const startIndex = i * columns;
+      const row = board.slice(startIndex, startIndex + columns);
+      twoDimensionalArray.push(row);
+    }
 
      */
-    
+
     [HttpGet("GetBoardStatus")]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
@@ -208,12 +208,8 @@ for (let i = 0; i < rows; i++) {
             var flatBoard = new int[rows * columns];
             var index = 0;
             for (var i = 0; i < rows; i++)
-            {
-                for (var j = 0; j < columns; j++)
-                {
-                    flatBoard[index++] = ticTacToeMatch.Board[i, j];
-                }
-            }
+            for (var j = 0; j < columns; j++)
+                flatBoard[index++] = ticTacToeMatch.Board[i, j];
 
             var response = new
             {
@@ -224,6 +220,7 @@ for (let i = 0; i < rows; i++) {
 
             return Ok(response);
         }
+
         _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
         return NotFound();
     }
