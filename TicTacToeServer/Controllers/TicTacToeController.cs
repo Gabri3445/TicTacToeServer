@@ -5,14 +5,14 @@ namespace TicTacToeServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public abstract class TicTacToeController : ControllerBase
+public class TicTacToeController : ControllerBase
 {
     private readonly IMongoCollection<TicTacToeMatch> _collection;
     private readonly IMongoDatabase _database;
     private readonly ILogger<TicTacToeController> _logger;
 
 
-    protected TicTacToeController(ILogger<TicTacToeController> logger)
+    public TicTacToeController(ILogger<TicTacToeController> logger)
     {
         var client = MongoDbClientSingleton.Instance;
         _database = client.Client.GetDatabase("tictactoe");
@@ -166,6 +166,7 @@ public abstract class TicTacToeController : ControllerBase
         var y = arguments.Location.Y;
 
         if (x > 3 || y > 3 || (player != 1 && player != 2)) return BadRequest();
+        
 
         Guid guid;
         try
@@ -179,11 +180,23 @@ public abstract class TicTacToeController : ControllerBase
         }
 
         var ticTacToeMatch = GetMatch(guid);
+        
+        
 
         if (ticTacToeMatch == null)
         {
             _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
             return NotFound();
+        }
+        if (player == 1 && ticTacToeMatch.CurrentPlayer != TicTacToeMatchStatus.X || player == 2 && ticTacToeMatch.CurrentPlayer != TicTacToeMatchStatus.O)
+        {
+            _logger.Log(LogLevel.Error, "Wrong player : {Uuid}", _guid);
+            return BadRequest("Wrong player");
+        }
+        if (ticTacToeMatch.CheckVictory() != TicTacToeMatchStatus.Ongoing)
+        {
+            _logger.Log(LogLevel.Error, "Match over with : {Uuid}", _guid);
+            return BadRequest("Match over");
         }
 
         if (ticTacToeMatch.Board[x, y] != 0) return BadRequest();
@@ -194,11 +207,13 @@ public abstract class TicTacToeController : ControllerBase
         {
             case 1:
                 ticTacToeMatch.Board[x, y] = 1;
+                ticTacToeMatch.CurrentPlayer = TicTacToeMatchStatus.O;
                 ticTacToeMatch.DrawCounter++;
                 _collection.ReplaceOne(filter, ticTacToeMatch);
                 return Ok();
             case 2:
                 ticTacToeMatch.Board[x, y] = 2;
+                ticTacToeMatch.CurrentPlayer = TicTacToeMatchStatus.X;
                 ticTacToeMatch.DrawCounter++;
                 _collection.ReplaceOne(filter, ticTacToeMatch);
                 return Ok();
@@ -207,7 +222,75 @@ public abstract class TicTacToeController : ControllerBase
         return BadRequest();
     }
 
+    [HttpGet("GetPlayer")]
+    public ActionResult<int> GetPlayer(string _guid)
+    {
+        Guid guid;
+        try
+        {
+            guid = Guid.Parse(_guid);
+        }
+        catch (Exception)
+        {
+            _logger.Log(LogLevel.Error, "Failed to parse UUID: {Uuid}", _guid);
+            return BadRequest();
+        }
+
+        var ticTacToeMatch = GetMatch(guid);
+        if (ticTacToeMatch == null)
+        {
+            _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
+            return NotFound();
+        }
+        if (ticTacToeMatch.CheckVictory() != TicTacToeMatchStatus.Ongoing)
+        {
+            _logger.Log(LogLevel.Error, "Match over with : {Uuid}", _guid);
+            return BadRequest("Match over");
+        }
+
+        return ticTacToeMatch.CurrentPlayer switch
+        {
+            TicTacToeMatchStatus.X => Ok(1),
+            TicTacToeMatchStatus.O => Ok(2),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
     // TODO check win
+
+    [HttpGet("CheckWin")]
+    public ActionResult<int> CheckWin(string _guid)
+    {
+        Guid guid;
+        try
+        {
+            guid = Guid.Parse(_guid);
+        }
+        catch (Exception)
+        {
+            _logger.Log(LogLevel.Error, "Failed to parse UUID: {Uuid}", _guid);
+            return BadRequest();
+        }
+
+        var ticTacToeMatch = GetMatch(guid);
+        if (ticTacToeMatch == null)
+        {
+            _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
+            return NotFound();
+        }
+
+        return ticTacToeMatch.CheckVictory() switch
+        {
+            TicTacToeMatchStatus.X => Ok(1),
+            TicTacToeMatchStatus.O => Ok(2),
+            TicTacToeMatchStatus.Ongoing => Ok(3),
+            TicTacToeMatchStatus.Draw => Ok(4),
+            TicTacToeMatchStatus.OWon => Ok(5),
+            TicTacToeMatchStatus.XWon => Ok(6),
+            _ => StatusCode(500)
+        };
+    }
+
 
     public class ConnectP2Arguments
     {
@@ -222,7 +305,7 @@ public abstract class TicTacToeController : ControllerBase
         public Location Location { get; set; }
     }
 
-    public abstract class Location
+    public class Location
     {
         public int X { get; set; }
         public int Y { get; set; }
