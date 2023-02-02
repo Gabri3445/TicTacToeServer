@@ -31,7 +31,7 @@ public class TicTacToeController : ControllerBase
             return BadRequest();
         }
 
-        var filter = Builders<TicTacToeMatch>.Filter.Or(
+        /* var filter = Builders<TicTacToeMatch>.Filter.Or(
             Builders<TicTacToeMatch>.Filter.Eq(x => x.User1, username),
             Builders<TicTacToeMatch>.Filter.Eq(x => x.User2, username)
         );
@@ -40,7 +40,7 @@ public class TicTacToeController : ControllerBase
         {
             _logger.Log(LogLevel.Error, "Username {Username} already created a match or is already in one", username);
             return BadRequest();
-        }
+        }*/
 
         var guid = Guid.NewGuid();
         await _collection.InsertOneAsync(new TicTacToeMatch(guid, username));
