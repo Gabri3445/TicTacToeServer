@@ -12,8 +12,7 @@ public class TicTacToeController : ControllerBase
     private readonly IMongoCollection<TicTacToeMatch> _collection;
     private readonly IMongoDatabase _database;
     private readonly ILogger<TicTacToeController> _logger;
-
-    // TODO Make classes for the responses
+    
     // TODO Consider using custom response codes DO NOT FORGET TO DOCUMENT THEM
 
     public TicTacToeController(ILogger<TicTacToeController> logger)
