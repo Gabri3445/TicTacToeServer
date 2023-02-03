@@ -77,7 +77,7 @@ public class TicTacToeController : ControllerBase
     [ProducesResponseType(typeof(string), 406)]
     [ProducesResponseType(200)]
     // ReSharper disable once InconsistentNaming
-    public ActionResult CheckP2Connected(string _guid)
+    public ActionResult CheckP2Connected([FromQuery(Name = "guid")] string _guid)
     {
         Guid guid;
         try
@@ -187,7 +187,7 @@ public class TicTacToeController : ControllerBase
     [ProducesResponseType(404)]
     [ProducesResponseType(typeof(int[]), 200)]
     // ReSharper disable once InconsistentNaming
-    public ActionResult<int[]> GetBoardStatus(string _guid)
+    public ActionResult<int[]> GetBoardStatus([FromQuery(Name = "guid")] string _guid)
     {
         // JSON return
         Guid guid;
@@ -300,7 +300,7 @@ public class TicTacToeController : ControllerBase
     [ProducesResponseType(typeof(string), 400)]
     [ProducesResponseType(404)]
     [ProducesResponseType(typeof(int), 200)]
-    public ActionResult<int> GetPlayer(string _guid)
+    public ActionResult<int> GetPlayer([FromQuery(Name = "guid")] string _guid)
     {
         Guid guid;
         try
@@ -338,7 +338,7 @@ public class TicTacToeController : ControllerBase
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
     [ProducesResponseType(typeof(int), 200)]
-    public ActionResult<int> CheckWin(string _guid)
+    public ActionResult<int> CheckWin([FromQuery(Name = "guid")] string _guid)
     {
         Guid guid;
         try
