@@ -23,6 +23,13 @@ public class TicTacToeController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("Ping")]
+    [ProducesResponseType(200)]
+    public ActionResult Ping()
+    {
+        return Ok();
+    }
+    
     [HttpPost("Create")]
     [ProducesResponseType(400)]
     [ProducesResponseType(typeof(CreateMatchResponse), 200)]
@@ -78,9 +85,10 @@ public class TicTacToeController : ControllerBase
     [ProducesResponseType(typeof(string), 400)]
     [ProducesResponseType(typeof(string), 404)]
     [ProducesResponseType(typeof(string), 406)]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(PlayerResponse), 200)]
     // ReSharper disable once InconsistentNaming
-    public ActionResult CheckP2Connected([FromQuery(Name = "guid")] string _guid)
+    // Returns the player 2 username
+    public ActionResult<PlayerResponse> CheckP2Connected([FromQuery(Name = "guid")] string _guid)
     {
         Guid guid;
         try
@@ -108,15 +116,16 @@ public class TicTacToeController : ControllerBase
         }
 
         _logger.Log(LogLevel.Information, "Player 2 connected to match with UUID: {Uuid}", _guid);
-        return Ok();
+        return Ok(new PlayerResponse(ticTacToeMatch.User2));
     }
 
     [HttpPut("ConnectP2")]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(PlayerResponse), 200)]
+    // Returns the player 1 username
     // ReSharper disable once InconsistentNaming
-    public ActionResult ConnectP2([FromBody] ConnectP2Arguments arguments)
+    public ActionResult<PlayerResponse> ConnectP2([FromBody] ConnectP2Arguments arguments)
     {
         var _guid = arguments.Guid;
         var username = arguments.Username;
@@ -150,7 +159,7 @@ public class TicTacToeController : ControllerBase
         _collection.UpdateOne(filter, update);
         // ticTacToeMatch.User2 = username;
         _logger.Log(LogLevel.Information, "Player 2 connected to match with UUID: {Uuid}", _guid);
-        return Ok();
+        return Ok(new PlayerResponse(ticTacToeMatch.User1));
     }
 
     // This is for javascript
