@@ -43,3 +43,12 @@ public class CheckWinResponse
 
     public int MatchStatus { get; set; }
 }
+
+public class PlayerResponse
+{
+    public PlayerResponse(string username)
+    {
+        Username = username;
+    }
+    public string Username { get; set; }
+}
