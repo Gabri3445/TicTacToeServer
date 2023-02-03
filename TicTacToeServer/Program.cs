@@ -1,4 +1,5 @@
 using TicTacToeServer;
+using TicTacToeServer.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<AddCorsHeaderMiddleware>();
 
 app.MapControllers();
 
