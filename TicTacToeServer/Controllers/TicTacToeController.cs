@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using TicTacToeServer.Controllers.Responses;
+using TicTacToeServer.Controllers.RequestBody;
 using MongoDB.Driver;
 
 namespace TicTacToeServer.Controllers;
@@ -24,9 +26,10 @@ public class TicTacToeController : ControllerBase
 
     [HttpPost("Create")]
     [ProducesResponseType(400)]
-    [ProducesResponseType(typeof(string), 200)]
-    public async Task<ActionResult<string>> CreateMatch([FromBody] string username)
+    [ProducesResponseType(typeof(CreateMatchResponse), 200)]
+    public ActionResult<CreateMatchResponse> CreateMatch([FromBody] CreateMatchArguments createMatchArguments)
     {
+        var username = createMatchArguments.Username;
         if (username.Equals(""))
         {
             _logger.Log(LogLevel.Error, "Username is empty");
@@ -48,9 +51,10 @@ public class TicTacToeController : ControllerBase
         */
 
         var guid = Guid.NewGuid();
-        await _collection.InsertOneAsync(new TicTacToeMatch(guid, username));
+        _collection.InsertOne(new TicTacToeMatch(guid, username));
         _logger.Log(LogLevel.Information, "{Username} created a match with UUID: {Guid}", username, guid);
-        return Ok(guid.ToString());
+        CreateMatchResponse createMatchResponse = new(guid.ToString());
+        return Ok(createMatchResponse);
     }
 
     private TicTacToeMatch? GetMatch(Guid guid)
@@ -185,9 +189,9 @@ public class TicTacToeController : ControllerBase
     [HttpGet("GetBoardStatus")]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
-    [ProducesResponseType(typeof(int[]), 200)]
+    [ProducesResponseType(typeof(GetBoardStatusResponse), 200)]
     // ReSharper disable once InconsistentNaming
-    public ActionResult<int[]> GetBoardStatus([FromQuery(Name = "guid")] string _guid)
+    public ActionResult<GetBoardStatusResponse> GetBoardStatus([FromQuery(Name = "guid")] string _guid)
     {
         // JSON return
         Guid guid;
@@ -212,12 +216,7 @@ public class TicTacToeController : ControllerBase
             for (var j = 0; j < columns; j++)
                 flatBoard[index++] = ticTacToeMatch.Board[i, j];
 
-            var response = new
-            {
-                Rows = rows,
-                Columns = columns,
-                Board = flatBoard
-            };
+            var response = new GetBoardStatusResponse(rows, columns, flatBoard);
 
             return Ok(response);
         }
@@ -299,8 +298,8 @@ public class TicTacToeController : ControllerBase
     [HttpGet("GetPlayer")]
     [ProducesResponseType(typeof(string), 400)]
     [ProducesResponseType(404)]
-    [ProducesResponseType(typeof(int), 200)]
-    public ActionResult<int> GetPlayer([FromQuery(Name = "guid")] string _guid)
+    [ProducesResponseType(typeof(GetPlayerResponse), 200)]
+    public ActionResult<GetPlayerResponse> GetPlayer([FromQuery(Name = "guid")] string _guid)
     {
         Guid guid;
         try
@@ -328,8 +327,8 @@ public class TicTacToeController : ControllerBase
 
         return ticTacToeMatch.CurrentPlayer switch
         {
-            TicTacToeMatchStatus.X => Ok(1),
-            TicTacToeMatchStatus.O => Ok(2),
+            TicTacToeMatchStatus.X => new GetPlayerResponse(1),
+            TicTacToeMatchStatus.O => new GetPlayerResponse(2),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -337,8 +336,8 @@ public class TicTacToeController : ControllerBase
     [HttpGet("CheckWin")]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
-    [ProducesResponseType(typeof(int), 200)]
-    public ActionResult<int> CheckWin([FromQuery(Name = "guid")] string _guid)
+    [ProducesResponseType(typeof(CheckWinResponse), 200)]
+    public ActionResult<CheckWinResponse> CheckWin([FromQuery(Name = "guid")] string _guid)
     {
         Guid guid;
         try
@@ -360,33 +359,13 @@ public class TicTacToeController : ControllerBase
 
         return ticTacToeMatch.CheckVictory() switch
         {
-            TicTacToeMatchStatus.X => Ok(1),
-            TicTacToeMatchStatus.O => Ok(2),
-            TicTacToeMatchStatus.Ongoing => Ok(3),
-            TicTacToeMatchStatus.Draw => Ok(4),
-            TicTacToeMatchStatus.OWon => Ok(5),
-            TicTacToeMatchStatus.XWon => Ok(6),
+            TicTacToeMatchStatus.X => new CheckWinResponse(1),
+            TicTacToeMatchStatus.O => new CheckWinResponse(2),
+            TicTacToeMatchStatus.Ongoing => new CheckWinResponse(3),
+            TicTacToeMatchStatus.Draw => new CheckWinResponse(4),
+            TicTacToeMatchStatus.OWon => new CheckWinResponse(5),
+            TicTacToeMatchStatus.XWon => new CheckWinResponse(6),
             _ => StatusCode(500)
         };
-    }
-
-
-    public class ConnectP2Arguments
-    {
-        public string Guid { get; set; }
-        public string Username { get; set; }
-    }
-
-    public class MakeMoveArguments
-    {
-        public string Guid { get; set; }
-        public int Player { get; set; }
-        public Location Location { get; set; }
-    }
-
-    public class Location
-    {
-        public int X { get; set; }
-        public int Y { get; set; }
-    }
+    } 
 }
