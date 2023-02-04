@@ -15,7 +15,6 @@ public class TicTacToeMatch
         Board = new int[3, 3];
         User1 = "";
         User2 = "";
-        // TicTacToeMatchStatus = TicTacToeMatchStatus.Ongoing;
         MatchGuid = matchGuid;
         User1 = user1;
         DrawCounter = 0;
