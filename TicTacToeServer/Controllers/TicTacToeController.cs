@@ -306,6 +306,7 @@ public class TicTacToeController : ControllerBase
     [HttpGet("GetPlayer")]
     [ProducesResponseType(typeof(string), 400)]
     [ProducesResponseType(404)]
+    [ProducesResponseType(406)]
     [ProducesResponseType(typeof(GetPlayerResponse), 200)]
     public ActionResult<GetPlayerResponse> GetPlayer([FromQuery(Name = "guid")] string _guid)
     {
@@ -330,7 +331,7 @@ public class TicTacToeController : ControllerBase
         if (ticTacToeMatch.CheckVictory() != TicTacToeMatchStatus.Ongoing)
         {
             _logger.Log(LogLevel.Error, "Match over with : {Uuid}", _guid);
-            return BadRequest("Match over");
+            return StatusCode(406, "Match over");
         }
 
         return ticTacToeMatch.CurrentPlayer switch
