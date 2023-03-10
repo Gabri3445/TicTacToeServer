@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-
-namespace TicTacToeServer.Middleware;
+﻿namespace TicTacToeServer.Middleware;
 
 public class AddCorsHeaderMiddleware
 {
@@ -23,7 +18,7 @@ public class AddCorsHeaderMiddleware
             context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
             return Task.CompletedTask;
         });
-        
+
         if (context.Request.Method == "OPTIONS")
         {
             context.Response.StatusCode = 200;

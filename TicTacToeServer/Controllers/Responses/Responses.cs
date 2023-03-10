@@ -10,7 +10,7 @@ public class CreateMatchResponse
     public string Guid { get; set; }
 }
 
-public class GetBoardStatusResponse 
+public class GetBoardStatusResponse
 {
     public GetBoardStatusResponse(int rows, int columns, int[] flatBoard)
     {
@@ -50,5 +50,6 @@ public class PlayerResponse
     {
         Username = username;
     }
+
     public string Username { get; set; }
 }

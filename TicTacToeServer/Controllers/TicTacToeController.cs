@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using TicTacToeServer.Controllers.Responses;
-using TicTacToeServer.Controllers.RequestBody;
 using MongoDB.Driver;
+using TicTacToeServer.Controllers.RequestBody;
+using TicTacToeServer.Controllers.Responses;
 
 namespace TicTacToeServer.Controllers;
 
@@ -13,7 +12,7 @@ public class TicTacToeController : ControllerBase
     private readonly IMongoCollection<TicTacToeMatch> _collection;
     private readonly IMongoDatabase _database;
     private readonly ILogger<TicTacToeController> _logger;
-    
+
     // TODO Consider using custom response codes DO NOT FORGET TO DOCUMENT THEM
 
     public TicTacToeController(ILogger<TicTacToeController> logger)
@@ -31,7 +30,7 @@ public class TicTacToeController : ControllerBase
         _logger.Log(LogLevel.Information, "Ping from {Ip}", HttpContext.Request.Host);
         return Ok();
     }
-    
+
     [HttpPost("Create")]
     [ProducesResponseType(400)]
     [ProducesResponseType(typeof(CreateMatchResponse), 200)]
@@ -380,6 +379,7 @@ public class TicTacToeController : ControllerBase
         };
     }
 
+    //TODO this resets just if one player wants to reset
     [HttpPut("Reset")]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
@@ -404,17 +404,6 @@ public class TicTacToeController : ControllerBase
             _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
             return NotFound();
         }
-        
-        /*
-         * CurrentPlayer = TicTacToeMatchStatus.X;
-        Board = new int[3, 3];
-        User1 = "";
-        User2 = "";
-        MatchGuid = matchGuid;
-        User1 = user1;
-        DrawCounter = 0;
-        Id = matchGuid.ToString();
-         */
 
         ticTacToeMatch.CurrentPlayer = TicTacToeMatchStatus.X;
         ticTacToeMatch.Board = new int[3, 3];
