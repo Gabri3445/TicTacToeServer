@@ -23,3 +23,8 @@ public class CreateMatchArguments
 {
     public string Username { get; set; }
 }
+
+public class ResetRequest
+{
+    public string Guid { get; set; }
+}

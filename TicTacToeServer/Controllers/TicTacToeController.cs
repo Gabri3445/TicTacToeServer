@@ -27,6 +27,7 @@ public class TicTacToeController : ControllerBase
     [ProducesResponseType(200)]
     public ActionResult Ping()
     {
+        _logger.Log(LogLevel.Information, "Ping from {Ip}", HttpContext.Request.Host);
         return Ok();
     }
     
@@ -376,5 +377,51 @@ public class TicTacToeController : ControllerBase
             TicTacToeMatchStatus.XWon => new CheckWinResponse(6),
             _ => StatusCode(500)
         };
-    } 
+    }
+
+    [HttpPut("Reset")]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(200)]
+    public ActionResult Reset([FromBody] ResetRequest resetRequest)
+    {
+        var _guid = resetRequest.Guid;
+        Guid guid;
+        try
+        {
+            guid = Guid.Parse(_guid);
+        }
+        catch (Exception)
+        {
+            _logger.Log(LogLevel.Error, "Failed to parse UUID: {Uuid}", _guid);
+            return BadRequest();
+        }
+
+        var ticTacToeMatch = GetMatch(guid);
+        if (ticTacToeMatch == null)
+        {
+            _logger.Log(LogLevel.Error, "No matches found with UUID: {Uuid}", _guid);
+            return NotFound();
+        }
+        
+        /*
+         * CurrentPlayer = TicTacToeMatchStatus.X;
+        Board = new int[3, 3];
+        User1 = "";
+        User2 = "";
+        MatchGuid = matchGuid;
+        User1 = user1;
+        DrawCounter = 0;
+        Id = matchGuid.ToString();
+         */
+
+        ticTacToeMatch.CurrentPlayer = TicTacToeMatchStatus.X;
+        ticTacToeMatch.Board = new int[3, 3];
+        ticTacToeMatch.DrawCounter = 0;
+        ticTacToeMatch.MatchGuid = guid; // Might get reset like in MakeMove()
+
+        var filter = Builders<TicTacToeMatch>.Filter.Eq(x => x.MatchGuid, guid);
+        _collection.ReplaceOne(filter, ticTacToeMatch);
+        return Ok();
+    }
 }
