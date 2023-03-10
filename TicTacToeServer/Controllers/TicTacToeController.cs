@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TicTacToeServer.Controllers.Responses;
 using TicTacToeServer.Controllers.RequestBody;
@@ -337,8 +338,8 @@ public class TicTacToeController : ControllerBase
 
         return ticTacToeMatch.CurrentPlayer switch
         {
-            TicTacToeMatchStatus.X => new GetPlayerResponse(1),
-            TicTacToeMatchStatus.O => new GetPlayerResponse(2),
+            TicTacToeMatchStatus.X => Ok(new GetPlayerResponse(1)),
+            TicTacToeMatchStatus.O => Ok(new GetPlayerResponse(2)),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -369,12 +370,12 @@ public class TicTacToeController : ControllerBase
 
         return ticTacToeMatch.CheckVictory() switch
         {
-            TicTacToeMatchStatus.X => new CheckWinResponse(1),
-            TicTacToeMatchStatus.O => new CheckWinResponse(2),
-            TicTacToeMatchStatus.Ongoing => new CheckWinResponse(3),
-            TicTacToeMatchStatus.Draw => new CheckWinResponse(4),
-            TicTacToeMatchStatus.OWon => new CheckWinResponse(5),
-            TicTacToeMatchStatus.XWon => new CheckWinResponse(6),
+            TicTacToeMatchStatus.X => Ok(new CheckWinResponse(1)),
+            TicTacToeMatchStatus.O => Ok(new CheckWinResponse(2)),
+            TicTacToeMatchStatus.Ongoing => Ok(new CheckWinResponse(3)),
+            TicTacToeMatchStatus.Draw => Ok(new CheckWinResponse(4)),
+            TicTacToeMatchStatus.OWon => Ok(new CheckWinResponse(5)),
+            TicTacToeMatchStatus.XWon => Ok(new CheckWinResponse(6)),
             _ => StatusCode(500)
         };
     }
