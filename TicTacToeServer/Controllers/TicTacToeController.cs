@@ -285,6 +285,7 @@ public class TicTacToeController : ControllerBase
         var filter = Builders<TicTacToeMatch>.Filter.Eq(z => z.MatchGuid, guid);
         ticTacToeMatch = _collection.Find(filter).FirstOrDefault();
         ticTacToeMatch.MatchGuid = guid; // Match guid gets reset for some reason, so need to set it back
+        ticTacToeMatch.Id = guid.ToString(); // Id gets reset as well
         switch (player)
         {
             case 1:
