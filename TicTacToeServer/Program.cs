@@ -3,6 +3,11 @@ using TicTacToeServer.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseWindowsService(options =>
+{
+    options.ServiceName = "TicTacToeServer";
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers();
