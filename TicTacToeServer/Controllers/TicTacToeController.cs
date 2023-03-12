@@ -13,7 +13,7 @@ public class TicTacToeController : ControllerBase
     private readonly IMongoDatabase _database;
     private readonly ILogger<TicTacToeController> _logger;
 
-    // TODO Consider using custom response codes DO NOT FORGET TO DOCUMENT THEM
+    // TODO Log more stuff, switch to serilog
 
     public TicTacToeController(ILogger<TicTacToeController> logger)
     {
