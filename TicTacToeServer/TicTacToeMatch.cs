@@ -38,7 +38,7 @@ public class TicTacToeMatch
 
     [BsonRepresentation(BsonType.String)] public Guid MatchGuid { get; set; }
 
-    [BsonId] private string Id { get; }
+    [BsonId] public string Id { get; set; }
 
     public TicTacToeMatchStatus CheckVictory()
     {
